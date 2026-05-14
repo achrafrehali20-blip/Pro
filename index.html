@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محلل المنتجات المطلوبة - المغرب</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        select, input, button {
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        select, input {
+            background: white;
+            min-width: 200px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .filters {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: #e9ecef;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .product-card .badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge.hot {
+            background: #dc3545;
+        }
+
+        .badge.trending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge.new {
+            background: #28a745;
+        }
+
+        .product-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 15px 0;
+            color: #212529;
+        }
+
+        .product-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.75em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #212529;
+            font-size: 1.1em;
+        }
+
+        .demand-meter {
+            margin: 15px 0;
+        }
+
+        .demand-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .demand-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #ffc107, #dc3545);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        .product-sources {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .source-tag {
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.75em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #6c757d;
+        }
+
+        .export-btn {
+            background: #28a745;
+            margin-right: auto;
+        }
+
+        .last-update {
+            padding: 15px 30px;
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            select, input {
+                min-width: 100%;
+            }
+        }
+
+        .trend-indicator {
+            display: inline-block;
+            font-size: 1.5em;
+            margin-right: 5px;
+        }
+
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+        .trend-stable { color: #ffc107; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔥 محلل المنتجات الأكثر طلباً</h1>
+            <p>اكتشف المنتجات الرائجة في المغرب والدول العربية - تحديث يومي</p>
+        </header>
+
+        <div class="last-update" id="lastUpdate">
+            آخر تحديث: جاري التحميل...
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>🌍 اختر الدولة:</label>
+                <select id="countrySelect">
+                    <option value="MA">المغرب 🇲🇦</option>
+                    <option value="DZ">الجزائر 🇩🇿</option>
+                    <option value="TN">تونس 🇹🇳</option>
+                    <option value="EG">مصر 🇪🇬</option>
+                    <option value="SA">السعودية 🇸🇦</option>
+                    <option value="AE">الإمارات 🇦🇪</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>📊 الفترة الزمنية:</label>
+                <select id="timeRange">
+                    <option value="7">آخر 7 أيام</option>
+                    <option value="30" selected>آخر 30 يوم</option>
+                    <option value="90">آخر 3 أشهر</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>🔍 بحث عن منتج:</label>
+                <input type="text" id="searchInput" placeholder="ابحث عن منتج...">
+            </div>
+
+            <button onclick="fetchData()" id="refreshBtn">
+                🔄 تحديث البيانات
+            </button>
+
+            <button onclick="exportData()" class="export-btn">
+                📥 تصدير Excel
+            </button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>إجمالي المنتجات</h3>
+                <div class="value" id="totalProducts">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>منتجات ساخنة 🔥</h3>
+                <div class="value" id="hotProducts">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>متوسط معدل الطلب</h3>
+                <div class="value" id="avgDemand">0%</div>
+            </div>
+            <div class="stat-card">
+                <h3>أفضل فئة</h3>
+                <div class="value" id="topCategory">-</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterCategory('all')">الكل</button>
+            <button class="filter-btn" onclick="filterCategory('electronics')">إلكترونيات</button>
+            <button class="filter-btn" onclick="filterCategory('fashion')">أزياء</button>
+            <button class="filter-btn" onclick="filterCategory('home')">منزل</button>
+            <button class="filter-btn" onclick="filterCategory('beauty')">تجميل</button>
+            <button class="filter-btn" onclick="filterCategory('sports')">رياضة</button>
+        </div>
+
+        <div id="productsContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>جاري تحميل البيانات...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات وهمية للعرض (ستستبدل بـ API حقيقية)
+        let allProducts = [];
+        let filteredProducts = [];
+        let currentFilter = 'all';
+
+        // توليد بيانات وهمية واقعية
+        function generateMockData() {
+            const categories = ['electronics', 'fashion', 'home', 'beauty', 'sports'];
+            const categoryNames = {
+                'electronics': 'إلكترونيات',
+                'fashion': 'أزياء',
+                'home': 'منزل',
+                'beauty': 'تجميل',
+                'sports': 'رياضة'
+            };
+
+            const products = {
+                'electronics': [
+                    'سماعات بلوتوث لاسلكية', 'شاحن سريع 65W', 'كاميرا مراقبة ذكية',
+                    'ساعة ذكية', 'كيبورد ميكانيكي', 'ماوس جيمنج', 'باور بانك 20000mAh',
+                    'حامل هاتف للسيارة', 'كابل شحن مغناطيسي', 'مكبر صوت محمول'
+                ],
+                'fashion': [
+                    'حذاء رياضي رجالي', 'فستان صيفي نسائي', 'جاكيت جلد', 'حقيبة يد فاخرة',
+                    'ساعة يد كلاسيكية', 'نظارة شمسية', 'حزام جلد طبيعي', 'شال حريري',
+                    'قميص قطن رجالي', 'فستان سهرة'
+                ],
+                'home': [
+                    'مقلاة هوائية', 'مكنسة روبوت', 'طقم أواني طبخ', 'خلاط كهربائي',
+                    'مصباح LED ذكي', 'وسادة طبية', 'طقم مفارش سرير', 'ستائر حديثة',
+                    'منظم أدراج', 'سجادة تركية'
+                ],
+                'beauty': [
+                    'كريم مرطب للوجه', 'سيروم فيتامين سي', 'ماسكارا مقاومة للماء',
+                    'جهاز ليزر منزلي', 'فرشاة تنظيف الوجه', 'زيت أرغان مغربي',
+                    'مجموعة مكياج', 'عطر فاخر', 'صابون طبيعي', 'كريم واقي شمس'
+                ],
+                'sports': [
+                    'دمبلز قابل للتعديل', 'سجادة يوغا', 'حبل قفز', 'حزام تمارين مقاومة',
+                    'قفازات تمرين', 'حذاء جري احترافي', 'شاكر بروتين', 'ساعة رياضية',
+                    'كرة تمارين', 'ملابس رياضية'
+                ]
+            };
+
+            const sources = [
+                ['Avito', 'Jumia', 'Amazon'],
+                ['Avito', 'Jumia'],
+                ['Jumia', 'Amazon', 'AliExpress'],
+                ['Avito'],
+                ['Amazon', 'eBay']
+            ];
+
+            const trends = ['up', 'down', 'stable'];
+            const badges = ['hot', 'trending', 'new', null];
+
+            allProducts = [];
+            let id = 1;
+
+            categories.forEach(category => {
+                products[category].forEach(productName => {
+                    const demandScore = Math.floor(Math.random() * 100) + 1;
+                    const price = Math.floor(Math.random() * 2000) + 50;
+                    const views = Math.floor(Math.random() * 10000) + 100;
+
+                    allProducts.push({
+                        id: id++,
+                        name: productName,
+                        category: category,
+                        categoryName: categoryNames[category],
+                        price: price,
+                        avgPrice: price + Math.floor(Math.random() * 200) - 100,
+                        demandScore: demandScore,
+                        supplyScore: Math.floor(Math.random() * 100) + 1,
+                        trend: trends[Math.floor(Math.random() * trends.length)],
+                        searchVolume: Math.floor(Math.random() * 50000) + 1000,
+                        views: views,
+                        competition: demandScore > 70 ? 'عالي' : demandScore > 40 ? 'متوسط' : 'منخفض',
+                        profitMargin: Math.floor(Math.random() * 50) + 10,
+                        sources: sources[Math.floor(Math.random() * sources.length)],
+                        badge: badges[Math.floor(Math.random() * badges.length)],
+                        lastUpdated: new Date().toLocaleDateString('ar-MA')
+                    });
+                });
+            });
+
+            return allProducts;
+        }
+
+        // عرض المنتجات
+        function displayProducts(products) {
+            const container = document.getElementById('productsContainer');
+            
+            if (!products || products.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <h2>😔 لا توجد منتجات</h2>
+                        <p>جرب تغيير الفلتر أو الدولة</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="products-grid">';
+            
+            products.forEach(product => {
+                const trendIcon = product.trend === 'up' ? '📈' : 
+                                 product.trend === 'down' ? '📉' : '➡️';
+                const trendClass = `trend-${product.trend}`;
+                
+                const badgeHtml = product.badge ? 
+                    `<div class="badge ${product.badge}">
+                        ${product.badge === 'hot' ? '🔥 ساخن' : 
+                          product.badge === 'trending' ? '📈 رائج' : '🆕 جديد'}
+                    </div>` : '';
+
+                html += `
+                    <div class="product-card" data-category="${product.category}">
+                        ${badgeHtml}
+                        
+                        <div class="product-title">
+                            ${product.name}
+                        </div>
+
+                        <div class="product-info">
+                            <div class="info-item">
+                                <span class="info-label">💰 السعر</span>
+                                <span class="info-value">${product.price} DH</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">👁️ المشاهدات</span>
+                                <span class="info-value">${product.views.toLocaleString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">📊 الطلب</span>
+                                <span class="info-value">${product.demandScore}%</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">🔍 البحث/شهر</span>
+                                <span class="info-value">${product.searchVolume.toLocaleString()}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">⚔️ المنافسة</span>
+                                <span class="info-value">${product.competition}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">💹 هامش الربح</span>
+                                <span class="info-value">${product.profitMargin}%</span>
+                            </div>
+                        </div>
+
+                        <div class="demand-meter">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-size: 0.85em; color: #6c757d;">معدل الطلب</span>
+                                <span class="trend-indicator ${trendClass}">${trendIcon}</span>
+                            </div>
+                            <div class="demand-bar">
+                                <div class="demand-fill" style="width: ${product.demandScore}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="product-sources">
+                            ${product.sources.map(source => 
+                                `<span class="source-tag">${source}</span>`
+                            ).join('')}
+                        </div>
+
+                        <div style="margin-top: 15px; font-size: 0.8em; color: #6c757d; text-align: center;">
+                            📅 ${product.lastUpdated}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            updateStats(products);
+        }
+
+        // تحديث الإحصائيات
+        function updateStats(products) {
+            document.getElementById('totalProducts').textContent = products.length;
+            
+            const hotProducts = products.filter(p => p.demandScore > 70).length;
+            document.getElementById('hotProducts').textContent = hotProducts;
+
+            const avgDemand = Math.round(
+                products.reduce((sum, p) => sum + p.demandScore, 0) / products.length
+            );
+            document.getElementById('avgDemand').textContent = avgDemand + '%';
+
+            const categoryCounts = {};
+            products.forEach(p => {
+                categoryCounts[p.categoryName] = (categoryCounts[p.categoryName] || 0) + 1;
+            });
+            const topCat = Object.keys(categoryCounts).reduce((a, b) => 
+                categoryCounts[a] > categoryCounts[b] ? a : b, ''
+            );
+            document.getElementById('topCategory').textContent = topCat || '-';
+        }
+
+        // فلترة حسب الفئة
+        function filterCategory(category) {
+            currentFilter = category;
+            
+            // تحديث أزرار الفلتر
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // فلترة المنتجات
+            if (category === 'all') {
+                filteredProducts = allProducts;
+            } else {
+                filteredProducts = allProducts.filter(p => p.category === category);
+            }
+
+            displayProducts(filteredProducts);
+        }
+
+        // جلب البيانات
+        function fetchData() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ جاري التحديث...';
+
+            document.getElementById('productsContainer').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل البيانات من المصادر...</p>
+                </div>
+            `;
+
+            // محاكاة تحميل البيانات
+            setTimeout(() => {
+                allProducts = generateMockData();
+                filteredProducts = allProducts;
+                displayProducts(filteredProducts);
+                
+                const now = new Date();
+                document.getElementById('lastUpdate').textContent = 
+                    `آخر تحديث: ${now.toLocaleString('ar-MA')}`;
+                
+                btn.disabled = false;
+                btn.textContent = '🔄 تحديث البيانات';
+            }, 2000);
+        }
+
+        // البحث عن منتج
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredProducts = currentFilter === 'all' ? 
+                    allProducts : 
+                    allProducts.filter(p => p.category === currentFilter);
+            } else {
+                filteredProducts = allProducts.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm) &&
+                    (currentFilter === 'all' || p.category === currentFilter)
+                );
+            }
+            
+            displayProducts(filteredProducts);
+        });
+
+        // تصدير البيانات إلى Excel
+        function exportData() {
+            let csv = 'المنتج,الفئة,السعر,معدل الطلب,المشاهدات,حجم البحث,المنافسة,هامش الربح,المصادر\n';
+            
+            filteredProducts.forEach(p => {
+                csv += `"${p.name}","${p.categoryName}",${p.price},${p.demandScore}%,${p.views},${p.searchVolume},"${p.competition}",${p.profitMargin}%,"${p.sources.join(', ')}"\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `products_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // تغيير الدولة
+        document.getElementById('countrySelect').addEventListener('change', function() {
+            fetchData();
+        });
+
+        // تغيير الفترة الزمنية
+        document.getElementById('timeRange').addEventListener('change', function() {
+            fetchData();
+        });
+
+        // تحميل البيانات عند فتح الصفحة
+        window.addEventListener('load', function() {
+            fetchData();
+        });
+    </script>
+</body>
+</html>
